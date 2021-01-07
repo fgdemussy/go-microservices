@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 
@@ -20,10 +19,9 @@ func NewProducts(l *log.Logger) *Products {
 
 func (p *Products) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	lp := data.GetProducts()
-	d, err := json.Marshal(lp)
+	err := lp.ToJSON(w)
 	if err != nil {
 		http.Error(w, "Could not encode the product list", http.StatusInternalServerError)
 		return
 	}
-	w.Write(d)
 }

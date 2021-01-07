@@ -1,6 +1,10 @@
 package data
 
-import "time"
+import (
+	"encoding/json"
+	"io"
+	"time"
+)
 
 // Product defines the structure for an API of products
 type Product struct {
@@ -14,8 +18,17 @@ type Product struct {
 	Deleted     string  `json:"-"`
 }
 
+// Products is a list of Product
+type Products []*Product
+
+// ToJSON returns a JSON representation of Products
+func (p *Products) ToJSON(w io.Writer) error {
+	e := json.NewEncoder(w)
+	return e.Encode(p)
+}
+
 // GetProducts returns a ref to a list of products
-func GetProducts() []*Product {
+func GetProducts() Products {
 	return productList
 }
 
