@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -16,23 +17,23 @@ func main() {
 	l := log.New(os.Stdout, "go-ms", log.LstdFlags)
 
 	// create handlers
-	b := handlers.NewBazooka(l)
-	h := handlers.NewHello(l)
+	ph := handlers.NewProducts(l)
 
 	// create a new serveMux and register the handlers
+	port := "9000"
+	addr := fmt.Sprintf(":%s", port)
 	sm := http.NewServeMux()
-	sm.Handle("/hello", h)
-	sm.Handle("/bazooka", b)
+	sm.Handle("/", ph)
 
 	// create a new server
 	srv := &http.Server{
 		Handler:  sm,
-		Addr:     ":9000",
+		Addr:     addr,
 		ErrorLog: l,
 	}
 
 	go func() {
-		l.Println("Starting server...")
+		l.Printf("Starting server on %s", addr)
 		err := srv.ListenAndServe()
 		if err != nil {
 			l.Printf("Server is shutting down: %s\n", err)
