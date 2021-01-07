@@ -4,14 +4,14 @@ import "time"
 
 // Product defines the structure for an API of products
 type Product struct {
-	ID          int
-	Name        string
-	Description string
-	Price       float32
-	SKU         string
-	Created     string
-	Updated     string
-	Deleted     string
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float32 `json:"price"`
+	SKU         string  `json:"sku"`
+	Created     string  `json:"-"`
+	Updated     string  `json:"-"`
+	Deleted     string  `json:"-"`
 }
 
 // GetProducts returns a ref to a list of products
