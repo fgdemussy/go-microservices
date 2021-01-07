@@ -27,9 +27,12 @@ func main() {
 
 	// create a new server
 	srv := &http.Server{
-		Handler:  sm,
-		Addr:     addr,
-		ErrorLog: l,
+		Handler:      sm,
+		Addr:         addr,
+		ErrorLog:     l,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  120 * time.Second,
 	}
 
 	go func() {
