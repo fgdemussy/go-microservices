@@ -1,0 +1,71 @@
+basePath: /
+consumes:
+- application/json
+definitions:
+  Product:
+    description: Product defines the structure for an API of products
+    properties:
+      description:
+        type: string
+        x-go-name: Description
+      id:
+        format: int64
+        type: integer
+        x-go-name: ID
+      name:
+        type: string
+        x-go-name: Name
+      price:
+        format: float
+        type: number
+        x-go-name: Price
+      sku:
+        type: string
+        x-go-name: SKU
+    type: object
+    x-go-package: github.com/fgdemussy/go-microservices/data
+host: localhost
+info:
+  description: |-
+    the purpose of this application is to provide an application
+    that is using plain go code to define an API
+
+    This should demonstrate all the possible comment annotations
+    that are available to turn go code into a fully compliant swagger 2.0 spec
+  license:
+    name: MIT
+    url: http://opensource.org/licenses/MIT
+  termsOfService: there are no TOS at this moment, use at your own risk we take no responsibility
+  title: Petstore API.
+  version: 0.0.1
+paths:
+  /products:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        This will show all available pets by default.
+        You can get the pets that are out of stock
+      operationId: listProducts
+      produces:
+      - application/json
+      responses:
+        "200":
+          $ref: '#/responses/productsResponse'
+      schemes:
+      - http
+      summary: Lists pets filtered by some parameters.
+      tags:
+      - products
+produces:
+- application/json
+responses:
+  productsResponse:
+    description: A list of products returned in the response
+    schema:
+      items:
+        $ref: '#/definitions/Product'
+      type: array
+schemes:
+- http
+swagger: "2.0"
