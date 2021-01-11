@@ -1,3 +1,28 @@
+// Package handlers Petstore API.
+//
+// the purpose of this application is to provide an application
+// that is using plain go code to define an API
+//
+// This should demonstrate all the possible comment annotations
+// that are available to turn go code into a fully compliant swagger 2.0 spec
+//
+// Terms Of Service:
+//
+// there are no TOS at this moment, use at your own risk we take no responsibility
+//
+//     Schemes: http
+//     Host: localhost
+//     BasePath: /
+//     Version: 0.0.1
+//     License: MIT http://opensource.org/licenses/MIT
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+// swagger:meta
 package handlers
 
 import (
@@ -11,6 +36,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// A list of products returned in the response
+// swagger:response productsResponse
+type productsResponseWrapper struct {
+	// All Products found in the system
+	// in: body
+	Body []data.Product
+}
+
 // Products defines a handler for products related requests
 type Products struct {
 	l *log.Logger
@@ -19,13 +52,29 @@ type Products struct {
 // KeyProduct is a key to store Product in request context
 type KeyProduct struct {}
 
-
 // NewProducts returns a new Products handler
 func NewProducts(l *log.Logger) *Products {
 	return &Products{l}
 }
 
-// GetProducts gets a list of products from data store and returns them in json format
+// GetProducts returns a list of products
+// swagger:route GET /products products listProducts
+//
+// Lists pets filtered by some parameters.
+//
+// This will show all available pets by default.
+// You can get the pets that are out of stock
+//
+//     Responses:
+//     - 200: productsResponse
+//
+//     Consumes:
+//     - application/json
+//
+//     Produces:
+//     - application/json
+//
+//     Schemes: http
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle GET Products")
 	lp := data.GetProducts()
