@@ -1,9 +1,7 @@
 package data
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"regexp"
 	"time"
 
@@ -48,39 +46,25 @@ func validateSKU(fl validator.FieldLevel) bool {
 	return true
 }
 
-
-
-// FromJSON decodes json from an ioReader into a product struct
-func (p *Product) FromJSON(r io.Reader) error {
-	e := json.NewDecoder(r)
-	return e.Decode(p)
-}
-
-// ToJSON returns a JSON representation of Products
-func (p *Products) ToJSON(w io.Writer) error {
-	e := json.NewEncoder(w)
-	return e.Encode(p)
-}
-
 // GetProducts returns a ref to a list of products
 func GetProducts() Products {
 	return productList
 }
 
 // AddProduct add a product to productList, auto-generating it's ID
-func AddProduct(p *Product) {
+func AddProduct(p Product) {
 	p.ID = getNextID()
-	productList = append(productList, p)
+	productList = append(productList, &p)
 }
 
 // UpdateProduct replaces product with given data
-func UpdateProduct(id int, p *Product) error {
+func UpdateProduct(id int, p Product) error {
 	_, pos, err := findProduct(id)
 	if err != nil {
 		return err
 	}
 	p.ID = id
-	productList[pos] = p
+	productList[pos] = &p
 	return nil
 }
 

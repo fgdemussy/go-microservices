@@ -78,7 +78,7 @@ func NewProducts(l *log.Logger) *Products {
 func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 	p.l.Println("Handle GET Products")
 	lp := data.GetProducts()
-	err := lp.ToJSON(rw)
+	err := data.ToJSON(lp, rw)
 	if err != nil {
 		http.Error(rw, "Could not encode the product list", http.StatusInternalServerError)
 	}
@@ -88,7 +88,7 @@ func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
 func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request)  {
 	p.l.Println("Handle GET Products")
 	
-	prod := r.Context().Value(KeyProduct{}).(*data.Product)
+	prod := r.Context().Value(KeyProduct{}).(data.Product)
 
 	p.l.Printf("Prod: %#v", prod)
 	data.AddProduct(prod)
@@ -104,7 +104,7 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request)  {
 	}
 	p.l.Println("Handle PUT Product", id)
 	
-	prod := r.Context().Value(KeyProduct{}).(*data.Product)
+	prod := r.Context().Value(KeyProduct{}).(data.Product)
 	p.l.Printf("got prod from context %v", prod)
 
 	p.l.Printf("Prod: %#v", prod)
@@ -120,12 +120,11 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request)  {
 }
 
 // MiddlewareProductValidation extracts a Product from the request body
-func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler  {
-	
+func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler  {	
 	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
 		prod := &data.Product{}
 
-		err := prod.FromJSON(r.Body)
+		err := data.FromJSON(prod, r.Body)
 		if err != nil {
 			p.l.Println("[ERROR] deserializing product", err)
 			http.Error(rw, "Unable to unmarshal JSON", http.StatusBadRequest)
