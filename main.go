@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/fgdemussy/go-microservices/handlers"
+	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -22,8 +23,18 @@ func main() {
 	// create a new serveMux and register the handlers
 	port := "9000"
 	addr := fmt.Sprintf(":%s", port)
-	sm := http.NewServeMux()
-	sm.Handle("/", ph)
+	sm := mux.NewRouter()
+
+	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/products", ph.GetProducts)
+	
+	putRouter := sm.Methods(http.MethodPut).Subrouter()
+	putRouter.HandleFunc("/products/{id:[0-9]+}", ph.UpdateProduct)
+	putRouter.Use(ph.MiddlewareProductValidation)
+	
+	postRouter := sm.Methods(http.MethodPost).Subrouter()
+	postRouter.HandleFunc("/products", ph.AddProduct)
+	postRouter.Use(ph.MiddlewareProductValidation)
 
 	// create a new server
 	srv := &http.Server{
