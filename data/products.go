@@ -2,9 +2,13 @@ package data
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"time"
 )
+
+// ErrProductNotFound denotes when a product is not found in datastore
+var ErrProductNotFound = fmt.Errorf("Product not found")
 
 // Product defines the structure for an API of products
 type Product struct {
@@ -42,6 +46,26 @@ func GetProducts() Products {
 func AddProduct(p *Product) {
 	p.ID = getNextID()
 	productList = append(productList, p)
+}
+
+// UpdateProduct replaces product with given data
+func UpdateProduct(id int, p *Product) error {
+	_, pos, err := findProduct(id)
+	if err != nil {
+		return err
+	}
+	p.ID = id
+	productList[pos] = p
+	return nil
+}
+
+func findProduct(id int) (*Product, int, error)  {
+	for pos, p := range productList {
+		if p.ID == id {
+			return p, pos, nil
+		}
+	}
+	return nil, -1, ErrProductNotFound
 }
 
 func getNextID() int {
