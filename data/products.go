@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"regexp"
 	"time"
+
+	"github.com/go-playground/validator/v10"
 )
 
 // ErrProductNotFound denotes when a product is not found in datastore
@@ -13,23 +16,44 @@ var ErrProductNotFound = fmt.Errorf("Product not found")
 // Product defines the structure for an API of products
 type Product struct {
 	ID          int     `json:"id"`
-	Name        string  `json:"name"`
+	Name        string  `json:"name" validate:"required"`
 	Description string  `json:"description"`
-	Price       float32 `json:"price"`
-	SKU         string  `json:"sku"`
+	Price       float32 `json:"price" validate:"gt=0"`
+	SKU         string  `json:"sku" validate:"required,sku"`
 	Created     string  `json:"-"`
 	Updated     string  `json:"-"`
 	Deleted     string  `json:"-"`
 }
+
+// Products is a list of Product
+type Products []*Product
+
+// Validate checks field validations for a given Product
+func (p *Product) Validate() error {
+	validate := validator.New()
+	validate.RegisterValidation("sku", validateSKU)
+	return validate.Struct(p)
+}
+
+func validateSKU(fl validator.FieldLevel) bool {
+	// sku is of format abc-def-gjk
+	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
+	matches:= re.FindAllString(fl.Field().String(), -1)
+
+	if len(matches) != 1 {
+		return false
+	}
+
+	return true
+}
+
+
 
 // FromJSON decodes json from an ioReader into a product struct
 func (p *Product) FromJSON(r io.Reader) error {
 	e := json.NewDecoder(r)
 	return e.Decode(p)
 }
-
-// Products is a list of Product
-type Products []*Product
 
 // ToJSON returns a JSON representation of Products
 func (p *Products) ToJSON(w io.Writer) error {
