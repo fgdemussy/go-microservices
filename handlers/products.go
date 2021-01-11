@@ -108,7 +108,7 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request)  {
 	p.l.Printf("got prod from context %v", prod)
 
 	p.l.Printf("Prod: %#v", prod)
-	err = data.UpdateProduct(id, prod)
+	err = data.UpdateProduct(prod)
 	if err == data.ErrProductNotFound {
 		http.Error(rw, "Product not found", http.StatusNotFound)
 		return
@@ -131,7 +131,7 @@ func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler  
 			return
 		}
 
-		err = prod.Validate()
+		err = data.Validate(prod)
 		if err != nil {
 			p.l.Println("[ERROR] validating product", err)
 			http.Error(

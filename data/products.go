@@ -2,49 +2,49 @@ package data
 
 import (
 	"fmt"
-	"regexp"
-	"time"
-
-	"github.com/go-playground/validator/v10"
 )
 
-// ErrProductNotFound denotes when a product is not found in datastore
+// ErrProductNotFound denotes when a product can not be found in datastore
 var ErrProductNotFound = fmt.Errorf("Product not found")
 
 // Product defines the structure for an API of products
 // swagger:model
+// Product defines the structure for an API product
+// swagger:model
 type Product struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name" validate:"required"`
-	Description string  `json:"description"`
-	Price       float32 `json:"price" validate:"gt=0"`
-	SKU         string  `json:"sku" validate:"required,sku"`
-	Created     string  `json:"-"`
-	Updated     string  `json:"-"`
-	Deleted     string  `json:"-"`
+	// the id for the product
+	//
+	// required: false
+	// min: 1
+	ID int `json:"id"` // Unique identifier for the product
+
+	// the name for this poduct
+	//
+	// required: true
+	// max length: 255
+	Name string `json:"name" validate:"required"`
+
+	// the description for this poduct
+	//
+	// required: false
+	// max length: 10000
+	Description string `json:"description"`
+
+	// the price for the product
+	//
+	// required: true
+	// min: 0.01
+	Price float32 `json:"price" validate:"required,gt=0"`
+
+	// the SKU for the product
+	//
+	// required: true
+	// pattern: [a-z]+-[a-z]+-[a-z]+
+	SKU string `json:"sku" validate:"sku"`
 }
 
-// Products is a list of Product
+// Products is a slice of Product
 type Products []*Product
-
-// Validate checks field validations for a given Product
-func (p *Product) Validate() error {
-	validate := validator.New()
-	validate.RegisterValidation("sku", validateSKU)
-	return validate.Struct(p)
-}
-
-func validateSKU(fl validator.FieldLevel) bool {
-	// sku is of format abc-def-gjk
-	re := regexp.MustCompile(`[a-z]+-[a-z]+-[a-z]+`)
-	matches:= re.FindAllString(fl.Field().String(), -1)
-
-	if len(matches) != 1 {
-		return false
-	}
-
-	return true
-}
 
 // GetProducts returns a ref to a list of products
 func GetProducts() Products {
@@ -58,25 +58,40 @@ func AddProduct(p Product) {
 }
 
 // UpdateProduct replaces product with given data
-func UpdateProduct(id int, p Product) error {
-	_, pos, err := findProduct(id)
-	if err != nil {
-		return err
+func UpdateProduct(p Product) error {
+	i := findIndexByProductID(p.ID)
+	if i == -1 {
+		return ErrProductNotFound
 	}
-	p.ID = id
-	productList[pos] = &p
+
+	productList[i] = &p
+
 	return nil
 }
 
-func findProduct(id int) (*Product, int, error)  {
-	for pos, p := range productList {
-		if p.ID == id {
-			return p, pos, nil
-		}
+// GetProductByID returns a single product which matches the id from the
+// datastore.
+// Returns ProductNotFound error
+func GetProductByID(id int) (*Product, error)  {
+	i := findIndexByProductID(id);
+	if id == -1 {
+		return nil, ErrProductNotFound
 	}
-	return nil, -1, ErrProductNotFound
+
+	return productList[i], nil
 }
 
+func findIndexByProductID(id int) int {
+	for i, p := range productList {
+		if p.ID == id {
+			return i
+		}
+	}
+
+	return -1
+}
+
+// getNextID returns the next ID in sequence
 func getNextID() int {
 	lp := productList[len(productList) -1]
 	return lp.ID + 1
@@ -89,8 +104,6 @@ var productList = []*Product{
 		Description: "some chai tea",
 		Price:       2.55,
 		SKU:         "abc",
-		Created:     time.Now().UTC().String(),
-		Updated:     time.Now().UTC().String(),
 	},
 	{
 		ID:          2,
@@ -98,7 +111,5 @@ var productList = []*Product{
 		Description: "milky coffee",
 		Price:       5,
 		SKU:         "def",
-		Created:     time.Now().UTC().String(),
-		Updated:     time.Now().UTC().String(),
 	},
 }
